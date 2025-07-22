@@ -29,8 +29,8 @@ runs:
     - uses: actions/cache/restore@v4
       if: runner.os == 'macOS'
       with:
-        path: /usr/local/Cellar/llvm@18
-        key: brew-llvm-18-${{ runner.os }}-${{ github.sha }}
+        path: /opt/homebrew/Cellar/llvm@18
+        key: brew-llvm-18-${{ runner.os }}-${{ runner.arch }}
 
     - name: Setup Compiler Env - macOS
       if: runner.os == 'macOS'
