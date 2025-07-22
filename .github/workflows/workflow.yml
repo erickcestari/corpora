@@ -69,17 +69,25 @@ jobs:
           echo "CXX=/usr/bin/clang++" >> $GITHUB_ENV
 
       - name: Build All Modules
-        timeout-minutes: 40
+        timeout-minutes: 20
         run: |
           rustup default nightly
-          for module in bitcoin custommutator rustbitcoin rustminiscript btcd embit lnd ldk nlightning clightning; do
-            echo "Building $module"
-            if [ "$module" == "rustbitcoin" ] || [ "$module" == "rustminiscript" ] || [ "$module" == "ldk" ]; then
-              cd bitcoinfuzz/modules/$module && make cargo && make && cd -
-            else
-              cd bitcoinfuzz/modules/$module && make && cd -
-            fi
-          done
+          cd bitcoinfuzz/modules
+
+          (cd bitcoin && make) &
+          (cd custommutator && make) &
+          (cd btcd && make) &
+          (cd embit && make) &
+          (cd lnd && make) &
+          (cd nlightning && make) &
+          (cd clightning && make) &
+          (cd rustbitcoin && make cargo && make) &
+          (cd rustminiscript && make cargo && make) &
+          (cd ldk && make cargo && make) &
+
+          # Wait for all background jobs
+          wait
+        shell: bash
 
       - name: Cache build artifacts
         uses: actions/cache/save@v4
