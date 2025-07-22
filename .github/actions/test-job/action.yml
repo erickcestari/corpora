@@ -17,7 +17,7 @@ runs:
     - uses: actions/cache/restore@v4
       with:
         path: bitcoinfuzz
-        key: bitcoinfuzz-build-${{ runner.os }}-${{ github.sha }}
+        key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
 
     - name: Setup Compiler Env - Ubuntu
       if: runner.os == 'Linux'
