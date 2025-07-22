@@ -95,11 +95,11 @@ jobs:
           path: bitcoinfuzz
           key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
 
-      - name: Cache LLVM Homebrew Cellar - macOS
+      - name: Cache LLVM Homebrew - macOS
         if: runner.os == 'macOS'
         uses: actions/cache/save@v4
         with:
-          path: /usr/local/Cellar/llvm@18
+          path: $(brew --prefix)/Cellar/llvm@18
           key: brew-llvm-18-${{ runner.os }}-${{ github.sha }}
 
   test-script:
