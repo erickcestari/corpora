@@ -94,6 +94,7 @@ jobs:
       matrix:
         os: [ubuntu-24.04, macos-14]
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/test-job
         with:
           fuzz-target: script
@@ -106,6 +107,7 @@ jobs:
       matrix:
         os: [ubuntu-24.04, macos-14]
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/test-job
         with:
           fuzz-target: deserialize_block
@@ -118,6 +120,7 @@ jobs:
       matrix:
         os: [ubuntu-24.04, macos-14]
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/test-job
         with:
           fuzz-target: script_eval
@@ -130,6 +133,7 @@ jobs:
       matrix:
         os: [ubuntu-24.04, macos-14]
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/test-job
         with:
           fuzz-target: descriptor_parse
@@ -143,6 +147,7 @@ jobs:
       matrix:
         os: [ubuntu-24.04, macos-14]
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/test-job
         with:
           fuzz-target: miniscript_parse
@@ -156,6 +161,7 @@ jobs:
       matrix:
         os: [ubuntu-24.04, macos-14]
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/test-job
         with:
           fuzz-target: script_asm
@@ -168,6 +174,7 @@ jobs:
       matrix:
         os: [ubuntu-24.04, macos-14]
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/test-job
         with:
           fuzz-target: address_parse
@@ -180,6 +187,7 @@ jobs:
       matrix:
         os: [ubuntu-24.04, macos-14]
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/test-job
         with:
           fuzz-target: psbt_parse
@@ -195,9 +203,7 @@ jobs:
         os: [ubuntu-24.04, macos-14]
 
     steps:
-      - name: Clean bitcoin core
-        run: |
-          (cd ./modules/bitcoin && make clean)
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/test-job
         with:
           fuzz-target: deserialize_invoice
@@ -213,9 +219,7 @@ jobs:
         os: [ubuntu-24.04, macos-14]
 
     steps:
-      - name: Clean bitcoin core
-        run: |
-          (cd ./modules/bitcoin && make clean)
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/test-job
         with:
           fuzz-target: deserialize_invoice
