@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-13]
+        os: [ubuntu-24.04, macos-14]
 
     steps:
       - name: Checkout repo
@@ -57,22 +57,17 @@ jobs:
         shell: bash
 
       - name: Install LLVM and Clang - macOS
-        if: matrix.os == 'macos-13'
+        if: matrix.os == 'macos-14'
         run: |
           brew install llvm@18
-          echo "/usr/local/opt/llvm@18/bin" >> $GITHUB_PATH
-          export PATH="/usr/local/opt/llvm@18/bin:$PATH"
-        shell: bash
+          echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
+          echo "CC=$(brew --prefix llvm@18)/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix llvm@18)/bin/clang++" >> $GITHUB_ENV
 
-      - name: Install Boost - Ubuntu
-        if: matrix.os == 'ubuntu-24.04'
+      - name: Install build dependencies - macOS
+        if: matrix.os == 'macos-14'
         run: |
-          sudo apt install libboost-all-dev
-
-      - name: Install Boost and build dependencies - macOS
-        if: matrix.os == 'macos-13'
-        run: |
-          brew install boost autoconf gnu-sed automake libtool gettext pkg-config protobuf libsodium
+          brew install autoconf gnu-sed automake libtool gettext pkg-config protobuf libsodium
 
       - name: Setup common environment - Ubuntu
         if: matrix.os == 'ubuntu-24.04'
@@ -83,7 +78,7 @@ jobs:
           echo "CXX=/usr/bin/clang++" >> $GITHUB_ENV
 
       - name: Setup common environment - macOS
-        if: matrix.os == 'macos-13'
+        if: matrix.os == 'macos-14'
         run: |
           export CC=$(brew --prefix llvm@18)/bin/clang
           export CXX=$(brew --prefix llvm@18)/bin/clang++
@@ -93,10 +88,7 @@ jobs:
       - name: Build - Bitcoin Core
         timeout-minutes: 40
         run: |
-          if [ "${{ matrix.os }}" == "ubuntu-24.04" ]; then
-            export BOOST_LIB_DIR=/usr/lib/x86_64-linux-gnu/
-          elif [ "${{ matrix.os }}" == "macos-13" ]; then
-            export BOOST_LIB_DIR=$(brew --prefix boost)/lib/
+          if [ "${{ matrix.os }}" == "macos-14" ]; then
             export PATH="/usr/local/opt/autoconf/bin:/usr/local/opt/automake/bin:/usr/local/opt/libtool/bin:$PATH"
           fi
           cd bitcoinfuzz/modules/bitcoin && make
