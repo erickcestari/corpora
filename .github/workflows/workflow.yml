@@ -5,7 +5,6 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-
     strategy:
       fail-fast: false
       matrix:
@@ -141,6 +140,45 @@ jobs:
         run: |
           cd bitcoinfuzz/modules/clightning && make
 
+      - name: Cache build artifacts
+        uses: actions/cache/save@v4
+        with:
+          path: bitcoinfuzz
+          key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
+
+  # Individual test jobs
+  test-script:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Restore build artifacts
+        uses: actions/cache/restore@v4
+        with:
+          path: bitcoinfuzz
+          key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
+
+      - name: Setup environment - Ubuntu
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          echo "CC=/usr/bin/clang" >> $GITHUB_ENV
+          echo "CXX=/usr/bin/clang++" >> $GITHUB_ENV
+
+      - name: Setup environment - macOS
+        if: matrix.os == 'macos-14'
+        run: |
+          brew install llvm@18
+          echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
+          echo "CC=$(brew --prefix llvm@18)/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix llvm@18)/bin/clang++" >> $GITHUB_ENV
+
       - name: Test - script
         timeout-minutes: 5
         run: |
@@ -151,6 +189,38 @@ jobs:
             echo "Using corpora for script"
             FUZZ=script ./bitcoinfuzz -runs=1 ../script
           fi
+
+  test-deserialize-block:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Restore build artifacts
+        uses: actions/cache/restore@v4
+        with:
+          path: bitcoinfuzz
+          key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
+
+      - name: Setup environment - Ubuntu
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          echo "CC=/usr/bin/clang" >> $GITHUB_ENV
+          echo "CXX=/usr/bin/clang++" >> $GITHUB_ENV
+
+      - name: Setup environment - macOS
+        if: matrix.os == 'macos-14'
+        run: |
+          brew install llvm@18
+          echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
+          echo "CC=$(brew --prefix llvm@18)/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix llvm@18)/bin/clang++" >> $GITHUB_ENV
 
       - name: Test - deserialize_block
         timeout-minutes: 5
@@ -163,6 +233,38 @@ jobs:
             FUZZ=deserialize_block ./bitcoinfuzz -runs=1 ../deserialize_block
           fi
 
+  test-script-eval:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Restore build artifacts
+        uses: actions/cache/restore@v4
+        with:
+          path: bitcoinfuzz
+          key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
+
+      - name: Setup environment - Ubuntu
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          echo "CC=/usr/bin/clang" >> $GITHUB_ENV
+          echo "CXX=/usr/bin/clang++" >> $GITHUB_ENV
+
+      - name: Setup environment - macOS
+        if: matrix.os == 'macos-14'
+        run: |
+          brew install llvm@18
+          echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
+          echo "CC=$(brew --prefix llvm@18)/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix llvm@18)/bin/clang++" >> $GITHUB_ENV
+
       - name: Test - script_eval
         timeout-minutes: 5
         run: |
@@ -173,6 +275,43 @@ jobs:
             echo "Using corpora for script_eval"
             FUZZ=script_eval ./bitcoinfuzz -runs=1 ../script_eval
           fi
+
+  test-descriptor-parse:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Restore build artifacts
+        uses: actions/cache/restore@v4
+        with:
+          path: bitcoinfuzz
+          key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
+
+      - name: Install rust-toolchain
+        uses: actions-rs/toolchain@v1.0.6
+        with:
+          toolchain: nightly
+
+      - name: Setup environment - Ubuntu
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          echo "CC=/usr/bin/clang" >> $GITHUB_ENV
+          echo "CXX=/usr/bin/clang++" >> $GITHUB_ENV
+
+      - name: Setup environment - macOS
+        if: matrix.os == 'macos-14'
+        run: |
+          brew install llvm@18
+          echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
+          echo "CC=$(brew --prefix llvm@18)/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix llvm@18)/bin/clang++" >> $GITHUB_ENV
 
       - name: Test - descriptor_parse
         timeout-minutes: 5
@@ -185,6 +324,43 @@ jobs:
             ASAN_OPTIONS=detect_leaks=0 FUZZ=descriptor_parse ./bitcoinfuzz -runs=1 ../descriptor_parse
           fi
 
+  test-miniscript-parse:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Restore build artifacts
+        uses: actions/cache/restore@v4
+        with:
+          path: bitcoinfuzz
+          key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
+
+      - name: Install rust-toolchain
+        uses: actions-rs/toolchain@v1.0.6
+        with:
+          toolchain: nightly
+
+      - name: Setup environment - Ubuntu
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          echo "CC=/usr/bin/clang" >> $GITHUB_ENV
+          echo "CXX=/usr/bin/clang++" >> $GITHUB_ENV
+
+      - name: Setup environment - macOS
+        if: matrix.os == 'macos-14'
+        run: |
+          brew install llvm@18
+          echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
+          echo "CC=$(brew --prefix llvm@18)/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix llvm@18)/bin/clang++" >> $GITHUB_ENV
+
       - name: Test - miniscript_parse
         run: |
           if [ -d "./miniscript_parse" ]; then
@@ -194,6 +370,38 @@ jobs:
             echo "Using corpora for miniscript_parse"
             ASAN_OPTIONS=detect_leaks=0 FUZZ=miniscript_parse ./bitcoinfuzz -runs=1 ../miniscript_parse
           fi
+
+  test-script-asm:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Restore build artifacts
+        uses: actions/cache/restore@v4
+        with:
+          path: bitcoinfuzz
+          key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
+
+      - name: Setup environment - Ubuntu
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          echo "CC=/usr/bin/clang" >> $GITHUB_ENV
+          echo "CXX=/usr/bin/clang++" >> $GITHUB_ENV
+
+      - name: Setup environment - macOS
+        if: matrix.os == 'macos-14'
+        run: |
+          brew install llvm@18
+          echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
+          echo "CC=$(brew --prefix llvm@18)/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix llvm@18)/bin/clang++" >> $GITHUB_ENV
 
       - name: Test - script_asm
         run: |
@@ -205,6 +413,38 @@ jobs:
             FUZZ=script_asm ./bitcoinfuzz -runs=1 ../script_asm
           fi
 
+  test-address-parse:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Restore build artifacts
+        uses: actions/cache/restore@v4
+        with:
+          path: bitcoinfuzz
+          key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
+
+      - name: Setup environment - Ubuntu
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          echo "CC=/usr/bin/clang" >> $GITHUB_ENV
+          echo "CXX=/usr/bin/clang++" >> $GITHUB_ENV
+
+      - name: Setup environment - macOS
+        if: matrix.os == 'macos-14'
+        run: |
+          brew install llvm@18
+          echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
+          echo "CC=$(brew --prefix llvm@18)/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix llvm@18)/bin/clang++" >> $GITHUB_ENV
+
       - name: Test - address_parse
         run: |
           if [ -d "./address_parse" ]; then
@@ -214,6 +454,38 @@ jobs:
             echo "Using corpora for address_parse"
             FUZZ=address_parse ./bitcoinfuzz -runs=1 ../address_parse
           fi
+
+  test-psbt-parse:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Restore build artifacts
+        uses: actions/cache/restore@v4
+        with:
+          path: bitcoinfuzz
+          key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
+
+      - name: Setup environment - Ubuntu
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          echo "CC=/usr/bin/clang" >> $GITHUB_ENV
+          echo "CXX=/usr/bin/clang++" >> $GITHUB_ENV
+
+      - name: Setup environment - macOS
+        if: matrix.os == 'macos-14'
+        run: |
+          brew install llvm@18
+          echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
+          echo "CC=$(brew --prefix llvm@18)/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix llvm@18)/bin/clang++" >> $GITHUB_ENV
 
       - name: Test - psbt_parse
         run: |
@@ -225,6 +497,43 @@ jobs:
             ASAN_OPTIONS=detect_leaks=0 FUZZ=psbt_parse ./bitcoinfuzz -runs=1 ../psbt_parse
           fi
 
+  test-deserialize-invoice:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Restore build artifacts
+        uses: actions/cache/restore@v4
+        with:
+          path: bitcoinfuzz
+          key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
+
+      - name: Install rust-toolchain
+        uses: actions-rs/toolchain@v1.0.6
+        with:
+          toolchain: nightly
+
+      - name: Setup environment - Ubuntu
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          echo "CC=/usr/bin/clang" >> $GITHUB_ENV
+          echo "CXX=/usr/bin/clang++" >> $GITHUB_ENV
+
+      - name: Setup environment - macOS
+        if: matrix.os == 'macos-14'
+        run: |
+          brew install llvm@18
+          echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
+          echo "CC=$(brew --prefix llvm@18)/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix llvm@18)/bin/clang++" >> $GITHUB_ENV
+
       - name: Test - deserialize_invoice
         run: |
           if [ -d "./deserialize_invoice" ]; then
@@ -235,6 +544,43 @@ jobs:
             echo "Using corpora for deserialize_invoice"
             ASAN_OPTIONS=detect_leaks=0 FUZZ=deserialize_invoice ./bitcoinfuzz -runs=1 ../deserialize_invoice
           fi
+
+  test-deserialize-offer:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Restore build artifacts
+        uses: actions/cache/restore@v4
+        with:
+          path: bitcoinfuzz
+          key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
+
+      - name: Install rust-toolchain
+        uses: actions-rs/toolchain@v1.0.6
+        with:
+          toolchain: nightly
+
+      - name: Setup environment - Ubuntu
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          echo "CC=/usr/bin/clang" >> $GITHUB_ENV
+          echo "CXX=/usr/bin/clang++" >> $GITHUB_ENV
+
+      - name: Setup environment - macOS
+        if: matrix.os == 'macos-14'
+        run: |
+          brew install llvm@18
+          echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
+          echo "CC=$(brew --prefix llvm@18)/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix llvm@18)/bin/clang++" >> $GITHUB_ENV
 
       - name: Test - deserialize_offer
         run: |
