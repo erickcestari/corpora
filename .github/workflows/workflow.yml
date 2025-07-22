@@ -21,6 +21,32 @@ jobs:
           path: bitcoinfuzz
           submodules: recursive
 
+      - name: Cache Rust
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo
+            ~/.rustup
+          key: rust-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            rust-${{ runner.os }}-
+
+      - name: Cache Go Modules
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: go-mod-${{ runner.os }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            go-mod-${{ runner.os }}-
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            pip-${{ runner.os }}-
+
       - name: Install rust-toolchain
         uses: actions-rs/toolchain@v1.0.6
         with:
@@ -31,10 +57,11 @@ jobs:
         with:
           go-version: "stable"
 
-      - name: Install .NET SDK
+      - name: Install .NET SDK with cache
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "9.0.x"
+          cache: true
 
       - name: Setup Python and install embit
         uses: actions/setup-python@v5
@@ -71,16 +98,12 @@ jobs:
       - name: Setup common environment - Ubuntu
         if: matrix.os == 'ubuntu-24.04'
         run: |
-          export CC=/usr/bin/clang
-          export CXX=/usr/bin/clang++
           echo "CC=/usr/bin/clang" >> $GITHUB_ENV
           echo "CXX=/usr/bin/clang++" >> $GITHUB_ENV
 
       - name: Setup common environment - macOS
         if: matrix.os == 'macos-14'
         run: |
-          export CC=$(brew --prefix llvm@18)/bin/clang
-          export CXX=$(brew --prefix llvm@18)/bin/clang++
           echo "CC=$(brew --prefix llvm@18)/bin/clang" >> $GITHUB_ENV
           echo "CXX=$(brew --prefix llvm@18)/bin/clang++" >> $GITHUB_ENV
 
@@ -294,11 +317,6 @@ jobs:
           path: bitcoinfuzz
           key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
 
-      - name: Install rust-toolchain
-        uses: actions-rs/toolchain@v1.0.6
-        with:
-          toolchain: nightly
-
       - name: Setup environment - Ubuntu
         if: matrix.os == 'ubuntu-24.04'
         run: |
@@ -341,11 +359,6 @@ jobs:
         with:
           path: bitcoinfuzz
           key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
-
-      - name: Install rust-toolchain
-        uses: actions-rs/toolchain@v1.0.6
-        with:
-          toolchain: nightly
 
       - name: Setup environment - Ubuntu
         if: matrix.os == 'ubuntu-24.04'
@@ -515,11 +528,6 @@ jobs:
           path: bitcoinfuzz
           key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
 
-      - name: Install rust-toolchain
-        uses: actions-rs/toolchain@v1.0.6
-        with:
-          toolchain: nightly
-
       - name: Setup environment - Ubuntu
         if: matrix.os == 'ubuntu-24.04'
         run: |
@@ -562,11 +570,6 @@ jobs:
         with:
           path: bitcoinfuzz
           key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
-
-      - name: Install rust-toolchain
-        uses: actions-rs/toolchain@v1.0.6
-        with:
-          toolchain: nightly
 
       - name: Setup environment - Ubuntu
         if: matrix.os == 'ubuntu-24.04'
