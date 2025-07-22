@@ -87,181 +87,104 @@ jobs:
           path: bitcoinfuzz
           key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
 
-  _test_template: &test_job
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/cache/restore@v4
-        with:
-          path: bitcoinfuzz
-          key: bitcoinfuzz-build-${{ matrix.os }}-${{ github.sha }}
-
-      - name: Setup Compiler Env - Ubuntu
-        if: matrix.os == 'ubuntu-24.04'
-        run: |
-          echo "CC=/usr/bin/clang" >> $GITHUB_ENV
-          echo "CXX=/usr/bin/clang++" >> $GITHUB_ENV
-
-      - name: Setup Compiler Env - macOS
-        if: matrix.os == 'macos-14'
-        run: |
-          brew install llvm@18
-          echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
-          echo "CC=$(brew --prefix llvm@18)/bin/clang" >> $GITHUB_ENV
-          echo "CXX=$(brew --prefix llvm@18)/bin/clang++" >> $GITHUB_ENV
-
   test-script:
     needs: build
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-24.04, macos-14]
-    <<: *test_job
     steps:
-      - name: Test - script
-        run: |
-          if [ -d "./script" ]; then
-            cd bitcoinfuzz
-            export CXXFLAGS="-DBITCOIN_CORE -DRUST_BITCOIN"
-            make
-            FUZZ=script ./bitcoinfuzz -runs=1 ../script
-          fi
+      - uses: ./.github/actions/test-job
+        with:
+          fuzz-target: script
+          cxxflags: "-DBITCOIN_CORE -DRUST_BITCOIN"
 
   test-deserialize-block:
     needs: build
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-24.04, macos-14]
-    <<: *test_job
     steps:
-      - name: Test - deserialize_block
-        run: |
-          if [ -d "./deserialize_block" ]; then
-            cd bitcoinfuzz
-            export CXXFLAGS="-DBITCOIN_CORE -DRUST_BITCOIN -DBTCD"
-            make
-            FUZZ=deserialize_block ./bitcoinfuzz -runs=1 ../deserialize_block
-          fi
+      - uses: ./.github/actions/test-job
+        with:
+          fuzz-target: deserialize_block
+          cxxflags: "-DBITCOIN_CORE -DRUST_BITCOIN -DBTCD"
 
   test-script-eval:
     needs: build
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-24.04, macos-14]
-    <<: *test_job
     steps:
-      - name: Test - script_eval
-        timeout-minutes: 5
-        run: |
-          if [ -d "./script_eval" ]; then
-            cd bitcoinfuzz
-            export CXXFLAGS="-DBITCOIN_CORE -DBTCD"
-            make
-            echo "Using corpora for script_eval"
-            FUZZ=script_eval ./bitcoinfuzz -runs=1 ../script_eval
-          fi
+      - uses: ./.github/actions/test-job
+        with:
+          fuzz-target: script_eval
+          cxxflags: "-DBITCOIN_CORE -DBTCD"
 
   test-descriptor-parse:
     needs: build
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-24.04, macos-14]
-    <<: *test_job
     steps:
-      - name: Test - descriptor_parse
-        timeout-minutes: 5
-        run: |
-          if [ -d "./descriptor_parse" ]; then
-            cd bitcoinfuzz
-            export CXXFLAGS="-DBITCOIN_CORE -DRUST_MINISCRIPT"
-            make
-            echo "Using corpora for descriptor_parse"
-            ASAN_OPTIONS=detect_leaks=0 FUZZ=descriptor_parse ./bitcoinfuzz -runs=1 ../descriptor_parse
-          fi
+      - uses: ./.github/actions/test-job
+        with:
+          fuzz-target: descriptor_parse
+          cxxflags: "-DBITCOIN_CORE -DRUST_MINISCRIPT"
+          asan-disable-leaks: "true"
 
   test-miniscript-parse:
     needs: build
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-24.04, macos-14]
-    <<: *test_job
     steps:
-      - name: Test - miniscript_parse
-        run: |
-          if [ -d "./miniscript_parse" ]; then
-            cd bitcoinfuzz
-            export CXXFLAGS="-DBITCOIN_CORE -DRUST_MINISCRIPT"
-            make
-            echo "Using corpora for miniscript_parse"
-            ASAN_OPTIONS=detect_leaks=0 FUZZ=miniscript_parse ./bitcoinfuzz -runs=1 ../miniscript_parse
-          fi
+      - uses: ./.github/actions/test-job
+        with:
+          fuzz-target: miniscript_parse
+          cxxflags: "-DBITCOIN_CORE -DRUST_MINISCRIPT"
+          asan-disable-leaks: "true"
 
   test-script-asm:
     needs: build
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-24.04, macos-14]
-    <<: *test_job
     steps:
-      - name: Test - script_asm
-        run: |
-          if [ -d "./script_asm" ]; then
-            cd bitcoinfuzz
-            export CXXFLAGS="-DBITCOIN_CORE -DBTCD"
-            make
-            echo "Using corpora for script_asm"
-            FUZZ=script_asm ./bitcoinfuzz -runs=1 ../script_asm
-          fi
+      - uses: ./.github/actions/test-job
+        with:
+          fuzz-target: script_asm
+          cxxflags: "-DBITCOIN_CORE -DBTCD"
 
   test-address-parse:
     needs: build
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-24.04, macos-14]
-    <<: *test_job
     steps:
-      - name: Test - address_parse
-        run: |
-          if [ -d "./address_parse" ]; then
-            cd bitcoinfuzz
-            export CXXFLAGS="-DBITCOIN_CORE -DRUST_BITCOIN"
-            make
-            echo "Using corpora for address_parse"
-            FUZZ=address_parse ./bitcoinfuzz -runs=1 ../address_parse
-          fi
+      - uses: ./.github/actions/test-job
+        with:
+          fuzz-target: address_parse
+          cxxflags: "-DBITCOIN_CORE -DRUST_BITCOIN"
 
   test-psbt-parse:
     needs: build
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-24.04, macos-14]
-    <<: *test_job
-
     steps:
-      - name: Test - psbt_parse
-        run: |
-          if [ -d "./psbt_parse" ]; then
-            cd bitcoinfuzz
-            export CXXFLAGS="-DRUST_BITCOIN -DBTCD"
-            make
-            echo "Using corpora for psbt_parse"
-            ASAN_OPTIONS=detect_leaks=0 FUZZ=psbt_parse ./bitcoinfuzz -runs=1 ../psbt_parse
-          fi
+      - uses: ./.github/actions/test-job
+        with:
+          fuzz-target: psbt_parse
+          cxxflags: "-DRUST_BITCOIN -DBTCD"
+          asan-disable-leaks: "true"
 
   test-deserialize-invoice:
     needs: build
@@ -270,19 +193,16 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04, macos-14]
-    <<: *test_job
 
     steps:
-      - name: Test - deserialize_invoice
+      - name: Clean bitcoin core
         run: |
-          if [ -d "./deserialize_invoice" ]; then
-            cd bitcoinfuzz
-            export CXXFLAGS="-DLDK -DLND -DCLIGHTNING -DCUSTOM_MUTATOR_BOLT11"
-            (cd ./modules/bitcoin && make clean)
-            make
-            echo "Using corpora for deserialize_invoice"
-            ASAN_OPTIONS=detect_leaks=0 FUZZ=deserialize_invoice ./bitcoinfuzz -runs=1 ../deserialize_invoice
-          fi
+          (cd ./modules/bitcoin && make clean)
+      - uses: ./.github/actions/test-job
+        with:
+          fuzz-target: deserialize_invoice
+          cxxflags: "-DLDK -DLND -DCLIGHTNING -DCUSTOM_MUTATOR_BOLT11"
+          asan-disable-leaks: "true"
 
   test-deserialize-offer:
     needs: build
@@ -291,15 +211,13 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04, macos-14]
-    <<: *test_job
 
     steps:
-      - name: Test - deserialize_offer
+      - name: Clean bitcoin core
         run: |
-          if [ -d "./deserialize_offer" ]; then
-            cd bitcoinfuzz
-            export CXXFLAGS="-DLDK -DCLIGHTNING"
-            make
-            echo "Using corpora for deserialize_offer"
-            ASAN_OPTIONS=detect_leaks=0 FUZZ=deserialize_offer ./bitcoinfuzz -runs=1 ../deserialize_offer
-          fi
+          (cd ./modules/bitcoin && make clean)
+      - uses: ./.github/actions/test-job
+        with:
+          fuzz-target: deserialize_invoice
+          cxxflags: "-DLDK -DCLIGHTNING -DCUSTOM_MUTATOR_BOLT12_OFFER"
+          asan-disable-leaks: "true"

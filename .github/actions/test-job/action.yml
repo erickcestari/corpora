@@ -1,0 +1,53 @@
+name: Run Test Job
+description: Common setup for test jobs with fuzz target
+inputs:
+  fuzz-target:
+    description: The fuzz target folder name
+    required: true
+  cxxflags:
+    description: Optional CXXFLAGS
+    required: false
+  asan-disable-leaks:
+    description: Disable ASAN leak detection (true/false)
+    required: false
+    default: "false"
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/cache/restore@v4
+      with:
+        path: bitcoinfuzz
+        key: bitcoinfuzz-build-${{ runner.os }}-${{ github.sha }}
+
+    - name: Setup Compiler Env - Ubuntu
+      if: runner.os == 'Linux'
+      run: |
+        echo "CC=/usr/bin/clang" >> $GITHUB_ENV
+        echo "CXX=/usr/bin/clang++" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Setup Compiler Env - macOS
+      if: runner.os == 'macOS'
+      run: |
+        brew install llvm@18
+        echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
+        echo "CC=$(brew --prefix llvm@18)/bin/clang" >> $GITHUB_ENV
+        echo "CXX=$(brew --prefix llvm@18)/bin/clang++" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Run fuzz target ${{ inputs.fuzz-target }}
+      run: |
+        if [ -d "./${{ inputs.fuzz-target }}" ]; then
+          cd bitcoinfuzz
+          export CXXFLAGS="${{ inputs.cxxflags }}"
+          make
+          echo "Using corpora for ${{ inputs.fuzz-target }}"
+          if [ "${{ inputs.asan-disable-leaks }}" == "true" ]; then
+            ASAN_OPTIONS=detect_leaks=0 FUZZ=${{ inputs.fuzz-target }} ./bitcoinfuzz -runs=1 ../${{ inputs.fuzz-target }}
+          else
+            FUZZ=${{ inputs.fuzz-target }} ./bitcoinfuzz -runs=1 ../${{ inputs.fuzz-target }}
+          fi
+        fi
+      shell: bash
