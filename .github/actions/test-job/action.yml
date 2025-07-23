@@ -26,14 +26,6 @@ runs:
         echo "CXX=/usr/bin/clang++" >> $GITHUB_ENV
       shell: bash
 
-    - uses: actions/cache/restore@v4
-      if: runner.os == 'macOS'
-      with:
-        path: |
-          /opt/homebrew/Cellar/llvm@18
-          /opt/homebrew/lib/llvm@18
-        key: brew-llvm-18-${{ runner.os }}-${{ runner.arch }}
-
     - name: Setup Compiler Env - macOS
       if: runner.os == 'macOS'
       run: |

@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-14]
+        os: [ubuntu-24.04, macos-15]
 
     steps:
       - uses: actions/checkout@v4
@@ -40,43 +40,8 @@ jobs:
           pip install -r bitcoinfuzz/modules/embit/requirements.txt
           pip install mako
 
-      - name: Install LLVM and Clang - Ubuntu
-        if: matrix.os == 'ubuntu-24.04'
-        run: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh 18
-          sudo ln -sfT clang++-18 /usr/bin/clang++
-          sudo ln -sfT clang-18 /usr/bin/clang
-
-      - name: Cache LLVM Homebrew - macOS
-        if: matrix.os == 'macos-14'
-        id: cache-llvm
-        uses: actions/cache@v4
-        with:
-          path: |
-            /opt/homebrew/Cellar/llvm@18
-            /opt/homebrew/lib/llvm@18
-          key: brew-llvm-18-${{ runner.os }}-${{ runner.arch }}
-          restore-keys: |
-            brew-llvm-18-${{ runner.os }}-
-
-      - name: Install LLVM and Clang - macOS
-        if: matrix.os == 'macos-14' && steps.cache-llvm.outputs.cache-hit != 'true'
-        run: |
-          brew install llvm@18
-
-      - name: Setup Compiler Env - macOS
-        if: matrix.os == 'macos-14'
-        run: |
-          echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
-          echo "CC=$(brew --prefix llvm@18)/bin/clang" >> $GITHUB_ENV
-          echo "CXX=$(brew --prefix llvm@18)/bin/clang++" >> $GITHUB_ENV
-          echo "LDFLAGS=-L/opt/homebrew/opt/llvm@18/lib" >> $GITHUB_ENV
-          echo "CPPFLAGS=-I/opt/homebrew/opt/llvm@18/include" >> $GITHUB_ENV
-
       - name: Install build dependencies - macOS
-        if: matrix.os == 'macos-14'
+        if: matrix.os == 'macos-15'
         run: |
           brew install autoconf gnu-sed automake libtool gettext pkg-config protobuf libsodium
 
@@ -118,7 +83,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-24.04, macos-14]
+        os: [ubuntu-24.04, macos-15]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/test-job
@@ -131,7 +96,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-24.04, macos-14]
+        os: [ubuntu-24.04, macos-15]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/test-job
@@ -144,7 +109,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-24.04, macos-14]
+        os: [ubuntu-24.04, macos-15]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/test-job
@@ -157,7 +122,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-24.04, macos-14]
+        os: [ubuntu-24.04, macos-15]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/test-job
@@ -171,7 +136,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-24.04, macos-14]
+        os: [ubuntu-24.04, macos-15]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/test-job
@@ -185,7 +150,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-24.04, macos-14]
+        os: [ubuntu-24.04, macos-15]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/test-job
@@ -198,7 +163,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-24.04, macos-14]
+        os: [ubuntu-24.04, macos-15]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/test-job
@@ -211,7 +176,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-24.04, macos-14]
+        os: [ubuntu-24.04, macos-15]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/test-job
@@ -226,7 +191,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-14]
+        os: [ubuntu-24.04, macos-15]
 
     steps:
       - uses: actions/checkout@v4
@@ -242,7 +207,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-14]
+        os: [ubuntu-24.04, macos-15]
 
     steps:
       - uses: actions/checkout@v4
