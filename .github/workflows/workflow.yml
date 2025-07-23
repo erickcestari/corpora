@@ -72,6 +72,8 @@ jobs:
           echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
           echo "CC=$(brew --prefix llvm@18)/bin/clang" >> $GITHUB_ENV
           echo "CXX=$(brew --prefix llvm@18)/bin/clang++" >> $GITHUB_ENV
+          echo "LDFLAGS=-L/opt/homebrew/opt/llvm@18/lib" >> $GITHUB_ENV
+          echo "CPPFLAGS=-I/opt/homebrew/opt/llvm@18/include" >> $GITHUB_ENV
 
       - name: Install build dependencies - macOS
         if: matrix.os == 'macos-14'
