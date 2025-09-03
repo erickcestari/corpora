@@ -9,6 +9,7 @@ ASAN_OPTIONS="${4:-}"
 if [ -d "./${CORPUS_DIR}" ]; then
   echo "Using corpora for ${TARGET}"
   cd bitcoinfuzz
+  ls -la
   export CXXFLAGS="${CXXFLAGS}"
   [[ -n "${ASAN_OPTIONS}" ]] && export ASAN_OPTIONS="${ASAN_OPTIONS}"
   make
